@@ -11,6 +11,8 @@
         <service id="Stape\ConversionTracking\Service\CustomLoaderService">
             <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
             <argument type="service" id="logger"/>
+            <argument type="service" id="Shopware\Core\Framework\Adapter\Cache\CacheInvalidator"/>
+            <argument type="service" id="Doctrine\DBAL\Connection"/>
         </service>
 
         <service id="Stape\ConversionTracking\Subscriber\Order\OrderSubscriber">

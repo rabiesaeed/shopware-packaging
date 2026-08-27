@@ -42,6 +42,19 @@
                         "label": "Cookie Keeper",
                         "info": "Cookie Keeper wird verwendet, um die <a href='https://stape.io/blog/increase-first-party-cookie-lifetime-set-by-a-third-party-ip' target='_blank'>Lebensdauer von Cookies</a> in Safari und anderen Browsern mit ITP zu verlängern. Diese Option ist nur verfügbar, wenn Sie <a href='https://stape.io/gtm-server-hosting' target='_blank'>stape.io sGTM Hosting</a> verwenden und das <a href='https://stape.io/blog/increase-first-party-cookie-lifetime-set-by-a-third-party-ip#how-cookie-keeper-works' target='_blank'>Cookie-Keeper-Power-Up</a> eingerichtet haben.",
                         "tooltipText": ""
+                    },
+                    "customLoaderScript": {
+                        "label": "Generiertes Loader-Skript"
+                    },
+                    "apiFallback": {
+                        "blockButton": "Stape API blockieren",
+                        "unblockButton": "Stape API entsperren",
+                        "removeButton": "Custom-Loader-Skript entfernen",
+                        "blockedSuccess": "Stape API ist fuer Fallback-Tests blockiert.",
+                        "unblockedSuccess": "Stape API ist entsperrt.",
+                        "failed": "Stape API Fallback-Modus konnte nicht aktualisiert werden.",
+                        "removeSuccess": "Custom-Loader-Skript wurde entfernt.",
+                        "removeFailed": "Custom-Loader-Skript konnte nicht entfernt werden."
                     }
                 },
                 "dataLayer": {

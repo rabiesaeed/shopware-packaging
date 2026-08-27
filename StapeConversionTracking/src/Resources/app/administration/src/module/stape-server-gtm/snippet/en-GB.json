@@ -45,6 +45,16 @@
                     },
                     "customLoaderScript": {
                         "label": "Generated loader script"
+                    },
+                    "apiFallback": {
+                        "blockButton": "Block Stape API",
+                        "unblockButton": "Unblock Stape API",
+                        "removeButton": "Remove custom loader script",
+                        "blockedSuccess": "Stape API is blocked for fallback testing.",
+                        "unblockedSuccess": "Stape API is unblocked.",
+                        "failed": "Could not update Stape API fallback mode.",
+                        "removeSuccess": "Custom loader script was removed.",
+                        "removeFailed": "Could not remove custom loader script."
                     }
                 },
                 "dataLayer": {

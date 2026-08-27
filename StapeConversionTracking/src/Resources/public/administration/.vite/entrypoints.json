@@ -3,11 +3,11 @@
   "entryPoints": {
     "stape-conversion-tracking": {
       "css": [
-        "/bundles/stapeconversiontracking/administration/assets/stape-conversion-tracking-Bmo6cnK9.css"
+        "/bundles/stapeconversiontracking/administration/assets/stape-conversion-tracking-hVv5AKRB.css"
       ],
       "dynamic": [],
       "js": [
-        "/bundles/stapeconversiontracking/administration/assets/stape-conversion-tracking-8GjpMHO4.js"
+        "/bundles/stapeconversiontracking/administration/assets/stape-conversion-tracking-DHwe6MB6.js"
       ],
       "legacy": false,
       "preload": []

@@ -29,4 +29,45 @@ class CustomLoaderController extends AbstractController
 
         return new JsonResponse($result, $result['success'] ? 200 : 400);
     }
+
+    #[Route(path: '/api/stape/custom-loader/fallback-mode', name: 'api.stape.custom_loader.fallback_mode', methods: ['POST'])]
+    public function fallbackMode(Request $request, Context $context): JsonResponse
+    {
+        $payload = [];
+        if ($request->getContent() !== '') {
+            try {
+                $payload = $request->toArray();
+            } catch (\Throwable) {
+                $payload = [];
+            }
+        }
+
+        $enabled = filter_var($payload['enabled'] ?? $request->get('enabled'), \FILTER_VALIDATE_BOOLEAN);
+
+        $result = $this->customLoaderService->setForceApiFallback(
+            $enabled,
+            $payload['salesChannelId'] ?? $request->get('salesChannelId')
+        );
+
+        return new JsonResponse($result, $result['success'] ? 200 : 400);
+    }
+
+    #[Route(path: '/api/stape/custom-loader/remove', name: 'api.stape.custom_loader.remove', methods: ['POST'])]
+    public function remove(Request $request, Context $context): JsonResponse
+    {
+        $payload = [];
+        if ($request->getContent() !== '') {
+            try {
+                $payload = $request->toArray();
+            } catch (\Throwable) {
+                $payload = [];
+            }
+        }
+
+        $result = $this->customLoaderService->removeStoredCustomLoader(
+            $payload['salesChannelId'] ?? $request->get('salesChannelId')
+        );
+
+        return new JsonResponse($result);
+    }
 }

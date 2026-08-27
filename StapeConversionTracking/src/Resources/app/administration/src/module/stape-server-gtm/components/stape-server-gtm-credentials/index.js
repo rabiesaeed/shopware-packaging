@@ -85,6 +85,11 @@ const componentConfig = {
             isTestSandboxSuccessful: false
         };
     },
+    computed: {
+        isLocalGeneratedLoader() {
+            return this.actualConfigData?.['StapeConversionTracking.config.customLoaderSource'] === 'local';
+        }
+    },
     methods: {
         checkTextFieldInheritance(value) {
             if (typeof value !== 'string') {
@@ -101,30 +106,49 @@ const componentConfig = {
         gtmSnippetUpdate(value) {
             this.actualConfigData['StapeConversionTracking.config.snippetActive'] = value;
             if (!value) {
-                this.actualConfigData['StapeConversionTracking.config.customDomainActive'] = false;
-                this.actualConfigData['StapeConversionTracking.config.customLoaderActive'] = false;
-                this.actualConfigData['StapeConversionTracking.config.cookieKeeper'] = false;
+                this.actualConfigData['StapeConversionTracking.config.snippetId'] = '';
+                this.clearCustomDomainFields();
             }
         },
 
         customDomainUpdate(value) {
             this.actualConfigData['StapeConversionTracking.config.customDomainActive'] = value;
             if (!value) {
-                this.actualConfigData['StapeConversionTracking.config.customLoaderActive'] = false;
-                this.actualConfigData['StapeConversionTracking.config.cookieKeeper'] = false;
+                this.clearCustomDomainFields();
             }
         },
 
         customLoaderUpdate(value) {
             this.actualConfigData['StapeConversionTracking.config.customLoaderActive'] = value;
             if (!value) {
-                this.actualConfigData['StapeConversionTracking.config.cookieKeeper'] = false;
+                this.clearCustomLoaderFields();
             }
+        },
+
+        clearCustomDomainFields() {
+            this.actualConfigData['StapeConversionTracking.config.customDomainActive'] = false;
+            this.actualConfigData['StapeConversionTracking.config.customDomain'] = '';
+            this.clearCustomLoaderFields();
+        },
+
+        clearCustomLoaderFields() {
+            this.actualConfigData['StapeConversionTracking.config.customLoaderActive'] = false;
+            this.actualConfigData['StapeConversionTracking.config.customLoader'] = '';
+            this.actualConfigData['StapeConversionTracking.config.cookieKeeper'] = false;
+            this.clearGeneratedCustomLoaderFields();
+        },
+
+        clearGeneratedCustomLoaderFields() {
+            this.actualConfigData['StapeConversionTracking.config.customLoaderScript'] = '';
+            this.actualConfigData['StapeConversionTracking.config.customLoaderSource'] = '';
+            this.actualConfigData['StapeConversionTracking.config.customLoaderStatus'] = '';
+            this.actualConfigData['StapeConversionTracking.config.customLoaderSignature'] = '';
         },
 
         webhookUpdate(value) {
             this.actualConfigData['StapeConversionTracking.config.sendWebhooks'] = value;
             if (!value) {
+                this.actualConfigData['StapeConversionTracking.config.serverContainerUrl'] = '';
                 this.actualConfigData['StapeConversionTracking.config.purchaseWebhook'] = false;
                 this.actualConfigData['StapeConversionTracking.config.refundWebhook'] = false;
             }
@@ -211,6 +235,50 @@ const componentConfig = {
                         message: this.$tc('stape-server-gtm.middleware.status.notificationFailed')
                     });
                     this.$root.$emit('language-change');
+                });
+        },
+
+        setCustomLoaderFallbackMode(enabled) {
+            this.stapeMiddleware
+                .setCustomLoaderFallbackMode({
+                    enabled,
+                    salesChannelId: this.selectedSalesChannelId
+                })
+                .then((result) => {
+                    this.actualConfigData['StapeConversionTracking.config.forceApiFallback'] = result.forceApiFallback;
+                    this.actualConfigData['StapeConversionTracking.config.customLoaderSource'] = result.source || '';
+                    this.actualConfigData['StapeConversionTracking.config.customLoaderStatus'] = result.status || '';
+                    this.actualConfigData['StapeConversionTracking.config.customLoaderScript'] = result.script || '';
+
+                    this.createNotificationSuccess({
+                        message: enabled
+                            ? this.$tc('stape-server-gtm.settingForm.credentials.gtmSnippet.apiFallback.blockedSuccess')
+                            : this.$tc('stape-server-gtm.settingForm.credentials.gtmSnippet.apiFallback.unblockedSuccess')
+                    });
+                }, () => {
+                    this.createNotificationError({
+                        message: this.$tc('stape-server-gtm.settingForm.credentials.gtmSnippet.apiFallback.failed')
+                    });
+                });
+        },
+
+        removeCustomLoader() {
+            this.stapeMiddleware
+                .removeCustomLoader({
+                    salesChannelId: this.selectedSalesChannelId
+                })
+                .then((result) => {
+                    this.actualConfigData['StapeConversionTracking.config.customLoaderSource'] = result.source || '';
+                    this.actualConfigData['StapeConversionTracking.config.customLoaderStatus'] = result.status || '';
+                    this.actualConfigData['StapeConversionTracking.config.customLoaderScript'] = result.script || '';
+
+                    this.createNotificationSuccess({
+                        message: this.$tc('stape-server-gtm.settingForm.credentials.gtmSnippet.apiFallback.removeSuccess')
+                    });
+                }, () => {
+                    this.createNotificationError({
+                        message: this.$tc('stape-server-gtm.settingForm.credentials.gtmSnippet.apiFallback.removeFailed')
+                    });
                 });
         }
     },

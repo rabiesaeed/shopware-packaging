@@ -5,19 +5,27 @@ declare(strict_types=1);
 namespace Stape\ConversionTracking\Service;
 
 use GuzzleHttp\Client;
+use Doctrine\DBAL\Connection;
 use Psr\Log\LoggerInterface;
+use Shopware\Core\Framework\Adapter\Cache\CacheInvalidator;
+use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 class CustomLoaderService
 {
-    private const STAPE_API_BASE = 'https://api.app.stape.io/api/v2/container';
+    private const STAPE_API_BASE_GLOBAL = 'https://api.app.stape.io/api/v2/container';
+    private const STAPE_API_BASE_EU = 'https://api.app.eu.stape.io/api/v2/container';
     private const CONFIG_PREFIX = 'StapeConversionTracking.config.';
     private const SOURCE_API = 'api';
     private const SOURCE_FALLBACK = 'fallback';
+    private const SOURCE_LOCAL = 'local';
+    private const SYSTEM_CONFIG_CACHE_TAG_PREFIX = 'system.config-';
 
     public function __construct(
         private readonly SystemConfigService $systemConfigService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly CacheInvalidator $cacheInvalidator,
+        private readonly Connection $connection
     ) {
     }
 
@@ -33,6 +41,7 @@ class CustomLoaderService
         $customLoaderActive = $this->getBool('customLoaderActive', $salesChannelId);
         $customLoader = $this->getString('customLoader', $salesChannelId);
         $cookieKeeper = $this->getBool('cookieKeeper', $salesChannelId);
+        $forceApiFallback = $this->getBool('forceApiFallback', $salesChannelId);
 
         if (!$snippetActive || $snippetId === '') {
             return $this->clearStoredLoader('GTM snippet is disabled or GTM ID is missing.', $salesChannelId);
@@ -58,18 +67,65 @@ class CustomLoaderService
             ];
         }
 
-        $apiScript = $this->fetchCustomLoaderScriptFromApi($settings['containerId'], $settings['apiKey'], $settings['payload']);
+        $apiScript = $forceApiFallback
+            ? null
+            : $this->fetchCustomLoaderScriptFromApi($settings['containerId'], $settings['apiKey'], $settings['payload']);
 
         if ($apiScript !== null) {
             return $this->storeLoader($apiScript, self::SOURCE_API, 'Loader generated via Stape API.', $salesChannelId, $signature);
         }
 
-        return $this->keepStoredLoader(
-            $storedScript,
-            self::SOURCE_FALLBACK,
-            'Stape API failed; existing custom loader from database kept unchanged.',
-            $salesChannelId
-        );
+        if ($storedScript !== '' && ($storedSource === self::SOURCE_API || $storedSource === '')) {
+            $status = $forceApiFallback
+                ? 'Stape API blocked from settings; existing custom loader from database kept unchanged.'
+                : 'Stape API failed; existing custom loader from database kept unchanged.';
+
+            return $this->keepStoredLoader($storedScript, $storedSource ?: 'stored', $status, $salesChannelId);
+        }
+
+        $localScript = $this->buildLocalCustomLoaderScript($settings);
+        $status = $forceApiFallback
+            ? 'Loader generated locally because Stape API is blocked from settings.'
+            : 'Loader generated locally because Stape API failed.';
+
+        return $this->storeLoader($localScript, self::SOURCE_LOCAL, $status, $salesChannelId, $signature);
+    }
+
+    /**
+     * @return array{success: bool, source: string|null, status: string, script: string|null, forceApiFallback: bool}
+     */
+    public function setForceApiFallback(bool $enabled, ?string $salesChannelId = null): array
+    {
+        $this->systemConfigService->set(self::CONFIG_PREFIX . 'forceApiFallback', $enabled, $salesChannelId);
+        $result = $this->generateAndStoreCustomLoader($salesChannelId, true);
+        $result['forceApiFallback'] = $enabled;
+
+        return $result;
+    }
+
+    /**
+     * @return array{success: bool, source: null, status: string, script: null, forceApiFallback: bool}
+     */
+    public function removeStoredCustomLoader(?string $salesChannelId = null): array
+    {
+        foreach ([
+            'customLoaderScript',
+            'customLoaderSource',
+            'customLoaderStatus',
+            'customLoaderSignature',
+        ] as $key) {
+            $this->systemConfigService->delete(self::CONFIG_PREFIX . $key, $salesChannelId);
+        }
+
+        $this->invalidateConfigCache($salesChannelId);
+
+        return [
+            'success' => true,
+            'source' => null,
+            'status' => 'Stored custom loader script removed.',
+            'script' => null,
+            'forceApiFallback' => $this->getBool('forceApiFallback', $salesChannelId),
+        ];
     }
 
     /**
@@ -193,35 +249,54 @@ class CustomLoaderService
     private function fetchCustomLoaderScriptFromApi(string $containerId, ?string $apiKey, array $payload): ?string
     {
         try {
+            $client = new Client(['timeout' => 12]);
             $headers = ['Content-Type' => 'application/json'];
             if ($apiKey !== null) {
                 $headers['Authorization'] = 'Bearer ' . $apiKey;
             }
 
-            $response = (new Client(['timeout' => 12]))->post(
-                self::STAPE_API_BASE . '/' . $containerId . '/custom-loader',
-                [
-                    'headers' => $headers,
-                    'json' => $payload,
-                ]
-            );
+            $response = $this->requestCustomLoader($client, self::STAPE_API_BASE_GLOBAL, $containerId, $headers, $payload);
+            if ($response->getStatusCode() === 404) {
+                $response = $this->requestCustomLoader($client, self::STAPE_API_BASE_EU, $containerId, $headers, $payload);
+            }
 
             if ($response->getStatusCode() !== 200) {
                 return null;
             }
 
-            $data = json_decode((string) $response->getBody(), true);
-            $script = $data['body']['jsCode']
-                ?? $data['body']['code']
-                ?? $data['jsCode']
-                ?? $data['code']
-                ?? null;
-
-            return is_string($script) && trim($script) !== '' ? $script : null;
+            return $this->extractCustomLoaderScript((string) $response->getBody());
         } catch (\Throwable $e) {
             $this->logger->warning('Stape custom loader API failed: ' . $e->getMessage());
             return null;
         }
+    }
+
+    /**
+     * @param array<string, string> $headers
+     * @param array<string, string> $payload
+     */
+    private function requestCustomLoader(Client $client, string $baseUrl, string $containerId, array $headers, array $payload): \Psr\Http\Message\ResponseInterface
+    {
+        return $client->post(
+            $baseUrl . '/' . $containerId . '/custom-loader',
+            [
+                'headers' => $headers,
+                'http_errors' => false,
+                'json' => $payload,
+            ]
+        );
+    }
+
+    private function extractCustomLoaderScript(string $body): ?string
+    {
+        $data = json_decode($body, true);
+        $script = $data['body']['jsCode']
+            ?? $data['body']['code']
+            ?? $data['jsCode']
+            ?? $data['code']
+            ?? null;
+
+        return is_string($script) && trim($script) !== '' ? $script : null;
     }
 
     private function buildStandardGtmScript(string $snippetId, string $customDomain): string
@@ -232,6 +307,36 @@ class CustomLoaderService
             '<script async src="%s/gtm.js?id=%s"></script>',
             htmlspecialchars($gtmDomain, \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8'),
             htmlspecialchars($snippetId, \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8')
+        );
+    }
+
+    /**
+     * @param array{customDomain: string, prefix: string, loader: string, queryParameter: string, encodedString: string, addQueryParameter: string, cookieKeeper: bool} $settings
+     */
+    private function buildLocalCustomLoaderScript(array $settings): string
+    {
+        $loaderPrefix = $settings['prefix'] . ($settings['cookieKeeper'] ? 'kp' : '');
+        $loaderUrl = sprintf(
+            '%s/%s%s.js?%s=%s&%s',
+            $this->normalizeUrl($settings['customDomain']),
+            $loaderPrefix,
+            $settings['loader'],
+            $settings['queryParameter'],
+            $settings['encodedString'],
+            $settings['addQueryParameter']
+        );
+
+        return sprintf(
+            '<!-- Google Tag Manager -->' . "\n"
+            . '<script>' . "\n"
+            . '(function(w,d,s,u,c){"use strict";var l="dataLayer";w[l]=w[l]||[];w[l].push({"gtm.start":new Date().getTime(),event:"gtm.js"});'
+            . 'if(c){var p=d.cookie?d.cookie.split("; "):[];for(var i=0;i<p.length;i++){if(p[i].indexOf("_sbp=")===0){var v=p[i].substring(5);if(v&&v!=="1"&&v!=="true"){u+="&bi="+encodeURIComponent(v);break;}}}}'
+            . 'var f=d.getElementsByTagName(s)[0],j=d.createElement(s);j.async=true;j.src=u;if(f&&f.parentNode){f.parentNode.insertBefore(j,f);}else{d.head.appendChild(j);}})'
+            . '(window,document,"script",%s,%s);' . "\n"
+            . '</script>' . "\n"
+            . '<!-- End Google Tag Manager -->',
+            json_encode($loaderUrl, \JSON_THROW_ON_ERROR),
+            $settings['cookieKeeper'] ? 'true' : 'false'
         );
     }
 
@@ -276,6 +381,11 @@ class CustomLoaderService
             'apiKeyHash' => hash('sha256', (string) ($settings['apiKey'] ?? '')),
             'webGtmId' => $settings['webGtmId'] ?? '',
             'customDomain' => $this->normalizeUrl((string) ($settings['customDomain'] ?? '')),
+            'prefix' => $settings['prefix'] ?? '',
+            'loader' => $settings['loader'] ?? '',
+            'queryParameter' => $settings['queryParameter'] ?? '',
+            'encodedString' => $settings['encodedString'] ?? '',
+            'addQueryParameter' => $settings['addQueryParameter'] ?? '',
             'cookieKeeper' => (bool) ($settings['cookieKeeper'] ?? false),
             'payload' => $settings['payload'] ?? [],
         ]));
@@ -293,16 +403,19 @@ class CustomLoaderService
             self::CONFIG_PREFIX . 'customLoaderSignature' => $signature,
         ], $salesChannelId);
 
+        $this->invalidateConfigCache($salesChannelId);
+
         return [
             'success' => true,
             'source' => $source,
             'status' => $status,
             'script' => $script,
+            'forceApiFallback' => $this->getBool('forceApiFallback', $salesChannelId),
         ];
     }
 
     /**
-     * @return array{success: bool, source: string, status: string, script: string|null}
+     * @return array{success: bool, source: string, status: string, script: string|null, forceApiFallback: bool}
      */
     private function keepStoredLoader(string $script, string $source, string $status, ?string $salesChannelId): array
     {
@@ -311,11 +424,14 @@ class CustomLoaderService
             self::CONFIG_PREFIX . 'customLoaderStatus' => $status,
         ], $salesChannelId);
 
+        $this->invalidateConfigCache($salesChannelId);
+
         return [
             'success' => true,
             'source' => $source,
             'status' => $status,
             'script' => $script !== '' ? $script : null,
+            'forceApiFallback' => $this->getBool('forceApiFallback', $salesChannelId),
         ];
     }
 
@@ -331,11 +447,14 @@ class CustomLoaderService
             self::CONFIG_PREFIX . 'customLoaderSignature' => null,
         ], $salesChannelId);
 
+        $this->invalidateConfigCache($salesChannelId);
+
         return [
             'success' => false,
             'source' => null,
             'status' => $status,
             'script' => null,
+            'forceApiFallback' => $this->getBool('forceApiFallback', $salesChannelId),
         ];
     }
 
@@ -347,5 +466,24 @@ class CustomLoaderService
     private function getString(string $key, ?string $salesChannelId = null): string
     {
         return trim((string) $this->systemConfigService->getString(self::CONFIG_PREFIX . $key, $salesChannelId));
+    }
+
+    private function invalidateConfigCache(?string $salesChannelId): void
+    {
+        $tags = [self::SYSTEM_CONFIG_CACHE_TAG_PREFIX . ($salesChannelId ?? '')];
+
+        if ($salesChannelId === null) {
+            try {
+                foreach ($this->connection->fetchFirstColumn('SELECT id FROM sales_channel') as $id) {
+                    if (is_string($id) && $id !== '') {
+                        $tags[] = self::SYSTEM_CONFIG_CACHE_TAG_PREFIX . Uuid::fromBytesToHex($id);
+                    }
+                }
+            } catch (\Throwable $e) {
+                $this->logger->warning('Unable to collect sales channel config cache tags: ' . $e->getMessage());
+            }
+        }
+
+        $this->cacheInvalidator->invalidate($tags, true);
     }
 }
