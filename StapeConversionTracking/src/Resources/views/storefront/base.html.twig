@@ -1,0 +1,11 @@
+{% sw_extends '@Storefront/storefront/base.html.twig' %}
+
+{% block base_body_script %}
+    {% if controllerAction == 'finishPage' and page.order is defined and page.order.orderNumber is defined %}
+        <script>
+            document.body.dataset.orderNumber = {{ page.order.orderNumber|json_encode|raw }};
+        </script>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

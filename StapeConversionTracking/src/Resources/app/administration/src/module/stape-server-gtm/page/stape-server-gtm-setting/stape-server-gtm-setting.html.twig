@@ -1,0 +1,51 @@
+<sw-page class="card-pointe-setting">
+<template #smart-bar-header>
+                <h2>
+                    {{ $tc('sw-settings.index.title') }}
+                    <sw-icon name="regular-chevron-right-xs" small></sw-icon>
+                    {{ $tc('stape-server-gtm.title') }}
+                </h2>
+            </template>
+<template #smart-bar-actions>
+<sw-button-process v-model:value="isSaveSuccessful"
+                                       class="gift-hint-settings-save"
+                                       variant="primary"
+                                       :isLoading="isLoading"
+                                       :disabled="isLoading || hasError"
+                                       @click="onSave">
+                        {{ $tc('global.default.save') }}
+                    </sw-button-process>
+</template>
+<template #content>
+<sw-sales-channel-config v-model:value="config"
+                                             ref="configComponent"
+                                             domain="StapeConversionTracking.config">
+<template #select="{ onInput, selectedSalesChannelId }">
+<sw-card class="sw-card--grid"
+                                             :title="$tc('global.entities.sales_channel', 2)">
+                                        <div class="card-container card-pointe-settings-sales-channel">
+<sw-single-select v-model:value="selectedSalesChannelId"
+                                                                  labelProperty="translated.name"
+                                                                  valueProperty="id"
+                                                                  :isLoading="isLoading"
+                                                                  :options="salesChannels"
+                                                                  @update:value="onSalesChannelChange(onInput, $event)">
+                                                </sw-single-select>
+</div>
+                                    </sw-card>
+</template>
+<template #content="{ actualConfigData, allConfigs, selectedSalesChannelId }">
+                                <div v-if="actualConfigData">
+<stape-server-gtm-credentials
+                                                :actualConfigData="actualConfigData"
+                                                :allConfigs="allConfigs"
+                                                :selectedSalesChannelId="selectedSalesChannelId"
+                                                @removeMedia="removeMedia($event)"
+                                                @setMedia="setMedia($event)">
+                                        </stape-server-gtm-credentials>
+</div>
+                            </template>
+</sw-sales-channel-config>
+<sw-loader v-if="isLoading"></sw-loader>
+</template>
+</sw-page>

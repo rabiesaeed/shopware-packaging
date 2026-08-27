@@ -1,0 +1,152 @@
+{
+    "stape-server-gtm": {
+        "settings": {
+            "configs": {
+                "messageNotBlank": "This value should not be blank"
+            }
+        },
+        "title": "Stape Conversion Tracking",
+        "settingForm": {
+            "testSandbox": "Test sandbox API credentials",
+            "messageSaveSuccess": "The Api settings have been saved.",
+            "messageTestSuccess": "The API credentials have been validated.",
+            "messageTestError": "The API credentials could not be validated",
+            "credentials": {
+                "gtmSnippet": {
+                    "cardTitle": "GTM Snippet",
+                    "snippetActive": {
+                        "label": "Insert GTM snippet",
+                        "tooltipText": ""
+                    },
+                    "snippetId": {
+                        "label": "Enter the Google Tag Manager web container ID, it should be formatted as \"GTM-XXXXXX\"",
+                        "tooltipText": ""
+                    },
+                    "customDomainActive": {
+                        "label": "Add custom domain",
+                        "tooltipText": ""
+                    },
+                    "customDomain": {
+                        "label": "If you use <a href='https://stape.io/gtm-server-hosting' target='_blank'>stape.io sGTM hosting</a> you can find sGTM container URL following <a href='https://help.stape.io/hc/en-us/articles/6080905799453-Find-server-container-URL-for-sGTM-container' target='_blank'>this guide</a>. Otherwise you can find sGTM container URL in the <a href='https://developers.google.com/tag-platform/tag-manager/server-side/app-engine-setup#4_add_the_server_url_to_google_tag_manager' target='_blank'>container settings</a>. <a href='https://stape.io/blog/how-to-add-a-custom-domain-to-the-google-tag-manager-server-container' target='_blank'>Custom domain is used</a> to set first party cookies. Leave empty if you want to use googletagmanager.com domain.",
+                        "tooltipText": "Subdomain must be specified with https:// without any extra slashes at the end, e.g. https://gtm.example.com"
+                    },
+                    "customLoaderActive": {
+                        "label": "Add custom loader",
+                        "tooltipText": ""
+                    },
+                    "customLoader": {
+                        "label": "Add stape container identifier. Follow <a href='https://help.stape.io/hc/en-us/articles/9697466601373-How-to-find-the-Stape-container-identifier' target='_blank'>this guide</a> to find stape container identifier. This feature is available only if you use <a href='https://stape.io/gtm-server-hosting' target='_blank'>stape.io sGTM hosting</a> and enabled <a href='https://help.stape.io/hc/en-us/articles/6080917962397-Set-up-Custom-Loader-power-up' target='_blank'>Custom Loader power up</a>. It allows you to increase the accuracy of tracking",
+                        "tooltipText": ""
+                    },
+                    "cookieKeeper": {
+                        "label": "Cookie keeper",
+                        "info": "Cookie Keeper is used to <a href='https://stape.io/blog/increase-first-party-cookie-lifetime-set-by-a-third-party-ip' target='_blank'>prolong cookie lifetime</a> in Safari and other browsers with ITP. This option is available only if you use <a href='https://stape.io/gtm-server-hosting' target='_blank'>stape.io sGTM hosting</a> and set up <a href='https://stape.io/blog/increase-first-party-cookie-lifetime-set-by-a-third-party-ip#how-cookie-keeper-works' target='_blank'>Cookie Keeper power up</a>",
+                        "tooltipText": ""
+                    },
+                    "customLoaderScript": {
+                        "label": "Generated loader script"
+                    }
+                },
+                "dataLayer": {
+                    "cardTitle": "Data Layer",
+                    "ecommerceEvents": {
+                        "label": "Add ecommerce Data Layer events",
+                        "tooltipText": ""
+                    },
+                    "userDataEvents": {
+                        "label": "Add user data to Data Layer events",
+                        "tooltipText": ""
+                    }
+                },
+                "webHooks": {
+                    "cardTitle": "Webhooks",
+                    "sendWebhooks": {
+                        "label": "Send webhooks to server GTM container",
+                        "tooltipText": ""
+                    },
+                    "serverContainerUrl": {
+                        "label": "Server container URL",
+                        "tooltipText": ""
+                    },
+                    "purchaseWebhook": {
+                        "label": "Purchase webhook",
+                        "tooltipText": ""
+                    },
+                    "refundWebhook": {
+                        "label": "Refund webhook",
+                        "tooltipText": ""
+                    },
+                    "sendTestWebhook": {
+                        "label": "Send test webhook"
+                    }
+                },
+                "userNameSandbox": {
+                    "label": "Sandbox user name",
+                    "tooltipText": "The REST API user name is used while testing to authenticate this plugin with the Card Pointe API."
+                },
+                "siteSandbox": {
+                    "label": "Site prefix sandbox",
+                    "tooltipText": "Sandbox prefix of site for iframe url"
+                },
+                "site": {
+                    "label": "Site prefix",
+                    "tooltipText": "Prefix of site for iframe url"
+                },
+                "passwordSandbox": {
+                    "label": "Sandbox password",
+                    "tooltipText": "The REST API password is used while testing to authenticate this plugin with the Card Pointe API."
+                },
+                "merchantIdSandbox": {
+                    "label": "Sandbox Card Pointe Merchant ID",
+                    "tooltipText": "The Card Pointe Merchant ID assigned to your Card Pointe sandbox account"
+                },
+                "apiDomainSandbox": {
+                    "label": "SandboxApi domain",
+                    "tooltipText": "Sandbox The REST API domain"
+                },
+                "sandbox": {
+                    "label": "Enable sandbox",
+                    "tooltipText": "Enable, if you want to test the Card Pointe integration."
+                },
+                "apiDomain": {
+                    "label": "Api domain",
+                    "tooltipText": "The REST API domain"
+                },
+                "userName": {
+                    "label": "Api username",
+                    "tooltipText": "The REST API username is used to authenticate this plugin with the API."
+                },
+                "password": {
+                    "label": "Api password",
+                    "tooltipText": "The REST API password is used to authenticate this plugin with the API."
+                },
+                "merchantId": {
+                    "label": "Merchant ID",
+                    "tooltipText": "Merchant ID assigned to your account"
+                }
+            },
+            "notifications": {
+                "notificationSuccess": "Saved",
+                "gtmSnippet": {
+                    "notificationFailed": "Please insert valid GTM web container ID, it should start with GTM-"
+                },
+                "customDomain": {
+                    "notificationFailed": "Subdomain must be specified with https:// without any extra slashes at the end, e.g. https://gtm.example.com"
+                },
+                "customLoader": {
+                    "notificationFailed": "Please insert Stape container id"
+                },
+                "serverContainerUrl": {
+                    "notificationFailed": "Please insert Server Container URL"
+                }
+            },
+            "testLive": "Test API credentials"
+        },
+        "middleware": {
+            "status": {
+                "successfullyNotified": "Success",
+                "notificationFailed": "Failed"
+            }
+        }
+    }
+}

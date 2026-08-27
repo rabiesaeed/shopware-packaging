@@ -1,0 +1,75 @@
+{% sw_extends '@Storefront/storefront/layout/meta.html.twig' %}
+
+{% block layout_head_meta_tags %}
+    {% block stape_gtm_snippet %}
+        {% set gtmSettings = config('StapeConversionTracking.config') %}
+
+        {% set gtmActive = gtmSettings.snippetActive %}
+        {% set gtmId = gtmSettings.snippetId|trim %}
+
+        {% set customDomainActive = gtmSettings.customDomainActive %}
+        {% set customDomain = gtmSettings.customDomain|trim|trim('/') %}
+
+        {% set customLoaderActive = gtmSettings.customLoaderActive %}
+        {% set customLoader = gtmSettings.customLoader|trim %}
+        {% set customLoaderPrefix = gtmSettings.customLoaderPrefix %}
+        {% set customLoaderQueryParameter = gtmSettings.customLoaderQueryParameter %}
+        {% set customLoaderEncodedString = gtmSettings.customLoaderEncodedString %}
+        {% set customLoaderAddQueryParameter = gtmSettings.customLoaderAddQueryParameter %}
+        {% set customLoaderScript = gtmSettings.customLoaderScript %}
+        {% set customLoaderSource = gtmSettings.customLoaderSource %}
+
+        {% set cookieKeeper = gtmSettings.cookieKeeper %}
+
+        {% if gtmActive and gtmId %}
+            {% set options = {
+                cookieName: "_sbp",
+                gtmId: gtmId,
+                customDomainActive: customDomainActive ? '1' : '0',
+                customDomain: customDomain,
+                customLoaderActive: customLoaderActive ? '1' : '0',
+                customLoader: customLoader,
+                customLoaderPrefix: customLoaderPrefix,
+                customLoaderQueryParameter: customLoaderQueryParameter,
+                customLoaderEncodedString: customLoaderEncodedString,
+                customLoaderAddQueryParameter: customLoaderAddQueryParameter,
+                customLoaderScript: customLoaderScript,
+                customLoaderSource: customLoaderSource,
+                cookieKeeper: cookieKeeper ? '1' : '0'
+            } %}
+            <div
+                data-stape-cookie="true"
+                data-stape-cookie-options="{{ options|json_encode|e('html_attr') }}"
+            ></div>
+        {% endif %}
+    {% endblock %}
+
+    {{ parent() }}
+{% endblock %}
+
+{% block layout_head_javascript_tracking %}
+    {% set ecommerceEventsActive = config('StapeConversionTracking.config.ecommerceEventsActive') %}
+    {% set customerDataEventsActive = config('StapeConversionTracking.config.customerDataEventsActive') %}
+
+    {% if ecommerceEventsActive %}
+        <script
+            type="text/plain"
+            data-stape-data-layer-template="true"
+            {% if page.order is defined and page.order.orderNumber is defined %}data-order-number="{{ page.order.orderNumber }}"{% endif %}
+        >
+            const stapeOrderNumber = document.currentScript.dataset.orderNumber || "";
+            const stapeOrderStorageKey = "stapePurchaseOrderId";
+            if (!stapeOrderNumber || stapeOrderNumber !== localStorage.getItem(stapeOrderStorageKey)) {
+            {% sw_include '@Storefront/storefront/layout/stape-data-layer.html.twig' with {
+                ecommerceEventsActive: ecommerceEventsActive,
+                customerDataEventsActive: customerDataEventsActive
+            } %}
+            if (stapeOrderNumber) {
+                localStorage.setItem(stapeOrderStorageKey, stapeOrderNumber);
+            }
+            }
+        </script>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

@@ -1,0 +1,52 @@
+{% sw_extends '@Storefront/storefront/component/checkout/offcanvas-cart.html.twig' %}
+
+{% block component_offcanvas_cart %}
+    {% set ecommerceEventsActive = config('StapeConversionTracking.config.ecommerceEventsActive') %}
+
+    {% if ecommerceEventsActive %}
+        {% set customerDataEventsActive = config('StapeConversionTracking.config.customerDataEventsActive') %}
+        {% set customer = context.customer %}
+        {% set billingAddress = customer ? customer.defaultBillingAddress : null %}
+
+        {% set options = {
+            customerDataEventsActive: customerDataEventsActive,
+            customerDefined: customer ? true : false,
+            currency: context.currency.isoCode,
+            cartTotal: page.cart.price.totalPrice,
+            userData: {
+                city: billingAddress ? billingAddress.city : '',
+                country: billingAddress and billingAddress.country ? billingAddress.country.name : '',
+                customer_id: customer ? customer.customerNumber : '',
+                email: customer ? customer.email : '',
+                first_name: customer ? customer.firstName : '',
+                last_name: customer ? customer.lastName : '',
+                phone: billingAddress ? billingAddress.phoneNumber : '',
+                region: billingAddress and billingAddress.countryState ? billingAddress.countryState.name : '',
+                street: billingAddress ? billingAddress.street : '',
+                zip: billingAddress ? billingAddress.zipcode : ''
+            }
+        } %}
+
+        <div
+            hidden
+            data-stape-view-cart="true"
+            data-stape-view-cart-options="{{ options|json_encode|e('html_attr') }}"
+        >
+            {% for lineItem in page.cart.lineItems %}
+                {% if lineItem.type == 'product' %}
+                    {% set item = {
+                        imageURL: lineItem.cover.url|default(''),
+                        item_id: lineItem.payload.productNumber|default(''),
+                        item_name: lineItem.label,
+                        price: lineItem.price.unitPrice,
+                        quantity: lineItem.quantity
+                    } %}
+
+                    <span data-stape-view-cart-item="{{ item|json_encode|e('html_attr') }}"></span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

@@ -1,0 +1,95 @@
+<sw-page
+    class="sw-settings-index stape-sw-settings-index-legacy-tabs"
+    :show-smart-bar="false"
+>
+    <template #content>
+        <sw-card-view>
+            <sw-tabs
+                class="sw-settings__tabs"
+                position-identifier="sw-settings-index"
+                :is-vertical="true"
+                :small="false"
+            >
+                <template #default="{ active }">
+                    <sw-tabs-item
+                        v-if="settingsGroups['shop']"
+                        class="sw-settings__tab-shop"
+                        :route="{ name: 'sw.settings.index.shop'}"
+                        name="shop"
+                        :active-tab="active"
+                        :title="$tc('sw-settings.index.tabShop')"
+                    >
+                        {{ $tc('sw-settings.index.tabShop') }}
+                    </sw-tabs-item>
+
+                    <sw-tabs-item
+                        v-if="settingsGroups['system']"
+                        class="sw-settings__tab-system"
+                        name="system"
+                        :route="{ name: 'sw.settings.index.system'}"
+                        :active-tab="active"
+                        :title="$tc('sw-settings.index.tabSystem')"
+                    >
+                        {{ $tc('sw-settings.index.tabSystem') }}
+                    </sw-tabs-item>
+
+                    <sw-tabs-item
+                        v-if="hasPluginConfig()"
+                        class="sw-settings__tab-plugins"
+                        name="plugins"
+                        :route="{ name: 'sw.settings.index.plugins'}"
+                        :active-tab="active"
+                        :title="$tc('sw-settings.index.tabPlugins')"
+                    >
+                        {{ $tc('sw-settings.index.tabPlugins') }}
+                    </sw-tabs-item>
+                </template>
+
+                <template #content="{ active }">
+                    <h1 class="sw-settings__content-header">
+                        {{ $tc('sw-settings.index.title') }}
+                    </h1>
+
+                    <sw-card
+                        class="sw-settings__card"
+                        position-identifier="sw-settings-index-content"
+                    >
+                        <slot
+                            v-for="(settingsItems, settingsGroup) in settingsGroups"
+                            :key="settingsGroup"
+                            :name="settingsGroup"
+                        >
+                            <div
+                                v-show="active === settingsGroup"
+                                :id="`sw-settings__content-grid-${settingsGroup}`"
+                                class="sw-settings__content-grid"
+                            >
+                                <sw-settings-item
+                                    v-for="settingsItem in settingsItems"
+                                    :id="settingsItem.id"
+                                    :key="settingsItem.name"
+                                    :label="getLabel(settingsItem)"
+                                    :to="getRouteConfig(settingsItem)"
+                                    :background-enabled="settingsItem.backgroundEnabled"
+                                >
+                                    <template #icon>
+                                        <component
+                                            :is="settingsItem.iconComponent"
+                                            v-if="settingsItem.iconComponent"
+                                        />
+
+                                        <mt-icon
+                                            v-else
+                                            :name="settingsItem.icon"
+                                            size="16px"
+                                        />
+                                    </template>
+                                </sw-settings-item>
+                            </div>
+                        </slot>
+                    </sw-card>
+                </template>
+            </sw-tabs>
+        </sw-card-view>
+    </template>
+</sw-page>

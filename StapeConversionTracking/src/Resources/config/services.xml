@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="Stape\ConversionTracking\Service\Util\ConfigExtractor">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+        </service>
+
+        <service id="Stape\ConversionTracking\Service\CustomLoaderService">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <argument type="service" id="logger"/>
+        </service>
+
+        <service id="Stape\ConversionTracking\Subscriber\Order\OrderSubscriber">
+            <argument type="service" id="Stape\ConversionTracking\Service\Util\ConfigExtractor"/>
+            <argument type="service" id="order.repository"/>
+            <argument type="service" id="request_stack"/>
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <service id="Stape\ConversionTracking\Controller\Api\TestApiController" public="true">
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+            <tag name="controller.service_arguments"/>
+        </service>
+
+        <service id="Stape\ConversionTracking\Controller\Api\CustomLoaderController" public="true">
+            <argument type="service" id="Stape\ConversionTracking\Service\CustomLoaderService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+            <tag name="controller.service_arguments"/>
+        </service>
+
+        <service id="Stape\ConversionTracking\Controller\Storefront\CookieKeeperController" public="true">
+            <argument type="service" id="Shopware\Core\System\SystemConfig\SystemConfigService"/>
+            <call method="setContainer">
+                <argument type="service" id="service_container"/>
+            </call>
+            <tag name="controller.service_arguments"/>
+        </service>
+
+        <service id="Stape\ConversionTracking\Framework\Cookie\StapeCookieProvider"
+                 decorates="Shopware\Storefront\Framework\Cookie\CookieProviderInterface">
+            <argument type="service" id="Stape\ConversionTracking\Framework\Cookie\StapeCookieProvider.inner"/>
+        </service>
+    </services>
+</container>

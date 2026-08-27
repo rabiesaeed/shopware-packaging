@@ -1,0 +1,149 @@
+{
+    "stape-server-gtm": {
+        "settings": {
+            "configs": {
+                "messageNotBlank": "Dieser Wert darf nicht leer sein"
+            }
+        },
+        "title": "Stape Conversion Tracking",
+        "settingForm": {
+            "testSandbox": "Sandbox-API-Zugangsdaten testen",
+            "messageSaveSuccess": "Die API-Einstellungen wurden gespeichert.",
+            "messageTestSuccess": "Die API-Zugangsdaten wurden erfolgreich validiert.",
+            "messageTestError": "Die API-Zugangsdaten konnten nicht validiert werden",
+            "credentials": {
+                "gtmSnippet": {
+                    "cardTitle": "GTM-Snippet",
+                    "snippetActive": {
+                        "label": "GTM-Snippet einfügen",
+                        "tooltipText": ""
+                    },
+                    "snippetId": {
+                        "label": "Geben Sie die Google Tag Manager Web-Container-ID ein. Sie muss das Format „GTM-XXXXXX“ haben.",
+                        "tooltipText": ""
+                    },
+                    "customDomainActive": {
+                        "label": "Benutzerdefinierte Domain hinzufügen",
+                        "tooltipText": ""
+                    },
+                    "customDomain": {
+                        "label": "Wenn Sie <a href='https://stape.io/gtm-server-hosting' target='_blank'>stape.io sGTM Hosting</a> verwenden, finden Sie die sGTM-Container-URL über <a href='https://help.stape.io/hc/en-us/articles/6080905799453-Find-server-container-URL-for-sGTM-container' target='_blank'>diese Anleitung</a>. Andernfalls finden Sie die sGTM-Container-URL in den <a href='https://developers.google.com/tag-platform/tag-manager/server-side/app-engine-setup#4_add_the_server_url_to_google_tag_manager' target='_blank'>Container-Einstellungen</a>. Eine <a href='https://stape.io/blog/how-to-add-a-custom-domain-to-the-google-tag-manager-server-container' target='_blank'>benutzerdefinierte Domain</a> wird verwendet, um First-Party-Cookies zu setzen. Lassen Sie das Feld leer, wenn Sie die Domain googletagmanager.com verwenden möchten.",
+                        "tooltipText": "Die Subdomain muss mit https:// angegeben werden, ohne zusätzliche Schrägstriche am Ende, z. B. https://gtm.example.com"
+                    },
+                    "customLoaderActive": {
+                        "label": "Benutzerdefinierten Loader hinzufügen",
+                        "tooltipText": ""
+                    },
+                    "customLoader": {
+                        "label": "Stape-Container-ID hinzufügen. Folgen Sie <a href='https://help.stape.io/hc/en-us/articles/9697466601373-How-to-find-the-Stape-container-identifier' target='_blank'>dieser Anleitung</a>, um die Stape-Container-ID zu finden. Diese Funktion ist nur verfügbar, wenn Sie <a href='https://stape.io/gtm-server-hosting' target='_blank'>stape.io sGTM Hosting</a> verwenden und das <a href='https://help.stape.io/hc/en-us/articles/6080917962397-Set-up-Custom-Loader-power-up' target='_blank'>Custom-Loader-Power-Up</a> aktiviert haben. Sie ermöglicht eine höhere Genauigkeit beim Tracking.",
+                        "tooltipText": ""
+                    },
+                    "cookieKeeper": {
+                        "label": "Cookie Keeper",
+                        "info": "Cookie Keeper wird verwendet, um die <a href='https://stape.io/blog/increase-first-party-cookie-lifetime-set-by-a-third-party-ip' target='_blank'>Lebensdauer von Cookies</a> in Safari und anderen Browsern mit ITP zu verlängern. Diese Option ist nur verfügbar, wenn Sie <a href='https://stape.io/gtm-server-hosting' target='_blank'>stape.io sGTM Hosting</a> verwenden und das <a href='https://stape.io/blog/increase-first-party-cookie-lifetime-set-by-a-third-party-ip#how-cookie-keeper-works' target='_blank'>Cookie-Keeper-Power-Up</a> eingerichtet haben.",
+                        "tooltipText": ""
+                    }
+                },
+                "dataLayer": {
+                    "cardTitle": "Data Layer",
+                    "ecommerceEvents": {
+                        "label": "E-Commerce-Data-Layer-Events hinzufügen",
+                        "tooltipText": ""
+                    },
+                    "userDataEvents": {
+                        "label": "Benutzerdaten zu Data-Layer-Events hinzufügen",
+                        "tooltipText": ""
+                    }
+                },
+                "webHooks": {
+                    "cardTitle": "Webhooks",
+                    "sendWebhooks": {
+                        "label": "Webhooks an den Server-GTM-Container senden",
+                        "tooltipText": ""
+                    },
+                    "serverContainerUrl": {
+                        "label": "Server-Container-URL",
+                        "tooltipText": ""
+                    },
+                    "purchaseWebhook": {
+                        "label": "Kauf-Webhook",
+                        "tooltipText": ""
+                    },
+                    "refundWebhook": {
+                        "label": "Rückerstattungs-Webhook",
+                        "tooltipText": ""
+                    },
+                    "sendTestWebhook": {
+                        "label": "Test-Webhook senden"
+                    }
+                },
+                "userNameSandbox": {
+                    "label": "Sandbox-Benutzername",
+                    "tooltipText": "Der REST-API-Benutzername wird beim Testen verwendet, um dieses Plugin mit der Card-Pointe-API zu authentifizieren."
+                },
+                "siteSandbox": {
+                    "label": "Sandbox-Seitenpräfix",
+                    "tooltipText": "Sandbox-Präfix der Seite für die iFrame-URL"
+                },
+                "site": {
+                    "label": "Seitenpräfix",
+                    "tooltipText": "Präfix der Seite für die iFrame-URL"
+                },
+                "passwordSandbox": {
+                    "label": "Sandbox-Passwort",
+                    "tooltipText": "Das REST-API-Passwort wird beim Testen verwendet, um dieses Plugin mit der Card-Pointe-API zu authentifizieren."
+                },
+                "merchantIdSandbox": {
+                    "label": "Sandbox Card Pointe Händler-ID",
+                    "tooltipText": "Die Card-Pointe-Händler-ID, die Ihrem Sandbox-Konto zugewiesen ist"
+                },
+                "apiDomainSandbox": {
+                    "label": "Sandbox-API-Domain",
+                    "tooltipText": "Die REST-API-Domain der Sandbox"
+                },
+                "sandbox": {
+                    "label": "Sandbox aktivieren",
+                    "tooltipText": "Aktivieren Sie diese Option, wenn Sie die Card-Pointe-Integration testen möchten."
+                },
+                "apiDomain": {
+                    "label": "API-Domain",
+                    "tooltipText": "Die REST-API-Domain"
+                },
+                "userName": {
+                    "label": "API-Benutzername",
+                    "tooltipText": "Der REST-API-Benutzername wird verwendet, um dieses Plugin mit der API zu authentifizieren."
+                },
+                "password": {
+                    "label": "API-Passwort",
+                    "tooltipText": "Das REST-API-Passwort wird verwendet, um dieses Plugin mit der API zu authentifizieren."
+                },
+                "merchantId": {
+                    "label": "Händler-ID",
+                    "tooltipText": "Die Ihrem Konto zugewiesene Händler-ID"
+                }
+            },
+            "notifications": {
+                "notificationSuccess": "Gespeichert",
+                "gtmSnippet": {
+                    "notificationFailed": "Bitte geben Sie eine gültige GTM-Web-Container-ID ein. Sie muss mit GTM- beginnen."
+                },
+                "customDomain": {
+                    "notificationFailed": "Die Subdomain muss mit https:// angegeben werden, ohne zusätzliche Schrägstriche am Ende, z. B. https://gtm.example.com"
+                },
+                "customLoader": {
+                    "notificationFailed": "Bitte geben Sie die Stape-Container-ID ein"
+                },
+                "serverContainerUrl": {
+                    "notificationFailed": "Bitte geben Sie die Server-Container-URL ein"
+                }
+            },
+            "testLive": "API-Zugangsdaten testen"
+        },
+        "middleware": {
+            "status": {
+                "successfullyNotified": "Erfolgreich",
+                "notificationFailed": "Fehlgeschlagen"
+            }
+        }
+    }
+}

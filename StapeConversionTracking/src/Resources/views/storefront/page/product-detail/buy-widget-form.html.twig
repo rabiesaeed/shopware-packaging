@@ -1,0 +1,55 @@
+{% sw_extends '@Storefront/storefront/page/product-detail/buy-widget-form.html.twig' %}
+
+{% block page_product_detail_buy_form_inner %}
+    {% set product = page.product %}
+
+    {% set ecommerceEventsActive = config('StapeConversionTracking.config.ecommerceEventsActive') %}
+    {% set customerDataEventsActive = config('StapeConversionTracking.config.customerDataEventsActive') %}
+
+    {% set customer = context.customer|default(null) %}
+    {% set billingAddress = customer ? customer.defaultBillingAddress : null %}
+    {% set productImageUrl = product.cover and product.cover.media ? product.cover.media.url : '' %}
+    {% set productCategory = page.product.seoCategory ? page.product.seoCategory.name : '' %}
+    {% set productManufacturer = product.manufacturer ? product.manufacturer.name : '' %}
+
+    {% set options = {
+        'customerDataEventsActive': customerDataEventsActive,
+        'customerDefined': customer ? true : false,
+        'currency': context.currency.isoCode,
+        'productPrice': product.calculatedPrice.totalPrice,
+        'productImageURL': productImageUrl,
+        'productCategory': productCategory,
+        'productManufacturer': productManufacturer,
+        'productId': product.productNumber,
+        'productName': product.translated.name,
+        'productQuantity': product.minPurchase,
+        'userData': {
+            'city': billingAddress ? billingAddress.city : '',
+            'country': billingAddress and billingAddress.country ? billingAddress.country.name : '',
+            'customer_id': customer ? customer.customerNumber : '',
+            'email': customer ? customer.email : '',
+            'first_name': customer ? customer.firstName : '',
+            'last_name': customer ? customer.lastName : '',
+            'phone': customer ? customer.phone : '',
+            'region': billingAddress and billingAddress.countryState ? billingAddress.countryState.name : '',
+            'street': billingAddress ? billingAddress.street : '',
+            'zip': billingAddress ? billingAddress.zipcode : ''
+        }
+    } %}
+
+    <form
+        id="productDetailPageBuyProductForm"
+        action="{{ formAction }}"
+        method="post"
+        class="buy-widget"
+        {% if ecommerceEventsActive %}data-stape-add-to-cart-options="{{ options|json_encode|e('html_attr') }}"{% endif %}
+        data-add-to-cart="true">
+        {% set DOWNLOAD_STATE = constant('Shopware\\Core\\Content\\Product\\State::IS_DOWNLOAD') %}
+        {% set showQuantitySelect = not product.states is defined or DOWNLOAD_STATE not in product.states or (DOWNLOAD_STATE in product.states and product.maxPurchase !== 1) %}
+        {% set buyable = product.available and product.childCount <= 0 and product.calculatedMaxPurchase > 0 %}
+
+        {% block page_product_detail_buy_container %}
+            {{ parent() }}
+        {% endblock %}
+    </form>
+{% endblock %}

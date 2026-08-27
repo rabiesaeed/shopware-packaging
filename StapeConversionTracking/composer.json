@@ -1,0 +1,44 @@
+{
+  "name": "stape/conversion-tracking",
+  "description": "Stape Conversion Tracking",
+  "type": "shopware-platform-plugin",
+  "license": "proprietary",
+  "version": "1.0.7",
+  "authors": [
+    {
+      "name": "Stape",
+      "role": "Company"
+    }
+  ],
+  "require": {
+    "shopware/core": ">=6.6.8.0 <6.8.0",
+    "shopware/storefront": ">=6.6.8.0 <6.8.0",
+    "shopware/administration": ">=6.6.8.0 <6.8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Stape\\ConversionTracking\\": "src/"
+    }
+  },
+  "extra": {
+    "shopware-plugin-class": "Stape\\ConversionTracking\\StapeConversionTracking",
+    "plugin-icon": "src/Resources/config/logo.png",
+    "copyright": "(c) by Stape",
+    "label": {
+      "en-GB": "Stape Conversion Tracking",
+      "de-DE": "Stape Conversion Tracking"
+    },
+    "manufacturerLink": {
+      "en-GB": "https://stape.io/",
+      "de-DE": "https://stape.io/"
+    },
+    "description": {
+      "en-GB": "Stape is your all-in-one solution for server-side data tracking. Industry leaders and top companies choose us to boost data quality and marketing ROI while maintaining security compliance.",
+      "de-DE": "Stape ist Ihre All-in-One-Lösung für serverseitiges Daten-Tracking. Branchenführer und Top-Unternehmen wählen uns, um die Datenqualität und den Marketing-ROI zu steigern und gleichzeitig die Sicherheitsvorschriften einzuhalten."
+    },
+    "supportLink": {
+      "en-GB": "https://stape.io/",
+      "de-DE": "https://stape.io/"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+monolog:
+  channels: [ 'stape_conversion_tracking_channel' ]
+
+  handlers:
+    stapeConversionTrackingLogHandler:
+      type: rotating_file
+      path: "%kernel.logs_dir%/[%kernel.environment%]stape.log"
+      level: debug
+      channels: [ "stape_conversion_tracking_channel" ]

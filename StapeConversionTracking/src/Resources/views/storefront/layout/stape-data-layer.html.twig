@@ -1,0 +1,186 @@
+{% block layout_stape_data_layer %}
+    {% set isNavigationListingPage = controllerName is same as("Navigation") and (controllerAction is same as("index") or controllerAction is same as("home")) %}
+    {% set customer = context.customer|default(null) %}
+    {% set billingAddress = customer ? customer.defaultBillingAddress : null %}
+
+    dataLayer.push({ecommerce: null});
+    dataLayer.push({
+    {% block layout_stape_data_layer_event %}
+        {% if isNavigationListingPage %}
+            'event': 'view_collection_stape',
+            'ecomm_pagetype': 'category',
+        {% elseif controllerName is same as("Search") and controllerAction is same as("search") %}
+            'event': 'search_submitted_stape',
+            'ecomm_pagetype': 'other',
+        {% elseif controllerName is same as("Product") and controllerAction is same as("index") %}
+            'event': 'view_item_stape',
+            'ecomm_pagetype': 'product',
+        {% elseif controllerName is same as("Checkout") and controllerAction is same as("cartPage") %}
+            'event': 'view_cart_stape',
+            'ecomm_pagetype': 'basket',
+        {% elseif controllerName is same as("Register") and controllerAction is same as("checkoutRegisterPage") %}
+            'event': 'begin_checkout_stape',
+            'ecomm_pagetype': 'basket',
+        {% elseif controllerName is same as("Checkout") and controllerAction is same as("confirmPage") %}
+            'event': 'add_shipping_info_stape',
+            'ecomm_pagetype': "basket",
+        {% elseif controllerName is same as("Checkout") and controllerAction is same as("finishPage") %}
+            'event': 'purchase_stape',
+            'ecomm_pagetype': "purchase",
+        {% endif %}
+    {% endblock %}
+
+    {% block layout_head_acris_data_layer_ecommerce %}
+        'ecommerce': {
+        {% if isNavigationListingPage %}
+            'item_list_id': '{{ page.category.id }}',
+            'currency': '{{ context.currency.isoCode }}',
+            'item_list_name': 'Products',
+            'items': [
+            {% for product in page.cmsPage.sections.blocks.filterBySectionPosition('main').slots.getSlot('content').data.listing %}
+                {
+                'imageURL': '{{ product.cover.media.url }}',
+                'index': '{{ page.cmsPage.sections.blocks.filterBySectionPosition('main').slots.getSlot('content').data.listing.criteria.offset + loop.index }}',
+                'item_brand': '{{ product.manufacturer.name }}',
+                'item_category': '{{ page.category.name }}',
+                'item_id': '{{ product.productNumber }}',
+                'item_name': '{{ product.translated.name }}',
+                'price': {{ product.calculatedPrice.unitPrice }}
+                },
+            {% endfor %}
+            ],
+        {% endif %}
+
+        {% if controllerName is same as("Search") and controllerAction is same as("search") %}
+            'search_term': '{{ page.searchTerm }}',
+            'currency': '{{ context.currency.isoCode }}',
+            'items': [
+            {% for product in page.listing.elements %}
+                {
+                'imageURL': '{{ product.cover.media.url }}',
+                'item_brand': '{{ product.manufacturer.name }}',
+                'item_id': '{{ product.productNumber }}',
+                'item_name': '{{ product.translated.name }}',
+                'price': {{ product.calculatedPrice.unitPrice }},
+                'quantity': {{ product.minPurchase }}
+                },
+            {% endfor %}
+            ],
+        {% endif %}
+
+        {% if controllerName is same as("Product") and controllerAction is same as("index") %}
+            'currency': '{{ context.currency.isoCode }}',
+            'value': {{ page.product.calculatedPrice.totalPrice }},
+            'items': [
+            {
+            'imageURL': '{{ page.product.cover.media.url }}',
+            'item_brand': '{{ page.product.manufacturer.name }}',
+            'item_category': '{{ page.product.seoCategory.name }}',
+            'item_id': '{{ page.product.productNumber }}',
+            'item_name': '{{ page.product.translated.name }}',
+            'price': {{ page.product.calculatedPrice.unitPrice }},
+            'quantity': {{ page.product.minPurchase }}
+            }
+            ],
+        {% endif %}
+
+        {% if controllerName is same as("Register") and controllerAction is same as("checkoutRegisterPage") %}
+            'value': {{ page.cart.price.totalPrice }},
+            'currency': '{{ context.currency.isoCode }}',
+            'items': [
+            {% for lineItem in page.cart.lineItems %}
+                {% if lineItem.type == 'product' %}
+                    {
+                    'imageURL': '{{ lineItem.cover.url }}',
+                    'item_id': '{{ lineItem.payload.productNumber }}',
+                    'item_name': '{{ lineItem.label }}',
+                    'price': {{ lineItem.price.unitPrice }},
+                    'quantity': {{ lineItem.quantity }}
+                    },
+                {% endif %}
+            {% endfor %}
+            ],
+        {% endif %}
+
+        {% if controllerName is same as("Checkout") and controllerAction is same as("cartPage") %}
+            'cart_total': {{ page.cart.price.totalPrice }},
+            'currency': '{{ context.currency.isoCode }}',
+            'cart_quantity': {% set quantity = 0 %}{% for lineItem in page.cart.lineItems %}{% if lineItem.type == 'product' %}{% set quantity = quantity + 1 %}{% endif %}{% endfor %}{{ quantity }},
+            'value': {{ page.cart.price.totalPrice }},
+            {% if page.cart.lineItems|length > 0 %}
+                'items': [
+                {% for lineItem in page.cart.lineItems %}
+                    {% if lineItem.type == 'product' %}
+                        {
+                        'imageURL': '{{ lineItem.cover.url }}',
+                        'item_id': '{{ lineItem.payload.productNumber }}',
+                        'item_name': '{{ lineItem.label }}',
+                        'price': {{ lineItem.price.unitPrice }},
+                        'quantity': {{ lineItem.quantity }}
+                        },
+                    {% endif %}
+                {% endfor %}
+                ],
+            {% endif %}
+        {% endif %}
+
+        {% if controllerName is same as("Checkout") and controllerAction is same as("confirmPage") %}
+            'value': {{ page.cart.price.totalPrice }},
+            'currency': '{{ context.currency.isoCode }}',
+            'items': [
+            {% for lineItem in page.cart.lineItems %}
+                {% if lineItem.type == 'product' %}
+                    {
+                    'imageURL': '{{ lineItem.cover.url }}',
+                    'item_id': '{{ lineItem.payload.productNumber }}',
+                    'item_name': '{{ lineItem.label }}',
+                    'price': {{ lineItem.price.unitPrice }},
+                    'quantity': {{ lineItem.quantity }}
+                    },
+                {% endif %}
+            {% endfor %}
+            ],
+        {% endif %}
+
+        {% if controllerName is same as("Checkout") and controllerAction is same as("finishPage") %}
+            'coupon': {% set promotions = '' %}{% for lineItem in page.order.lineItems.filterByType('promotion') %}{% set promotions = promotions ~ lineItem.payload.code|default('') %}{% if not loop.last %}{% set promotions = promotions ~ ',' %}{% endif %}{% endfor %}{{ promotions|json_encode|raw }},
+            'currency': {{ context.currency.isoCode|json_encode|raw }},
+            'discount_amount': {% set discountAmount = 0 %}{% for lineItem in page.order.lineItems.filterByType('promotion') %}{% set discountAmount = discountAmount + lineItem.totalPrice|abs %}{% endfor %}{{ discountAmount }},
+            'shipping': {% set totalDelivery = 0 %}{% for delivery in page.order.deliveries %}{% set totalDelivery = totalDelivery + delivery.shippingCosts.totalPrice %}{% endfor %}{{ totalDelivery }},
+            'sub_total': {{ page.order.price.totalPrice|default(0) }},
+            'tax': {% set totalTax = 0 %}{% for taxItem in page.order.price.calculatedTaxes %}{% set totalTax = totalTax + taxItem.tax %}{% endfor %}{{ totalTax }},
+            'transaction_id': {{ page.order.orderNumber|json_encode|raw }},
+            'value': {{ page.order.price.totalPrice|default(0) }},
+            'items': [
+            {% for lineItem in page.order.lineItems.filterByType('product') %}
+                {% set itemPrice = lineItem.unitPrice|default(lineItem.price.unitPrice|default(0)) %}
+                {
+                'imageURL': {{ lineItem.cover.url|default('')|json_encode|raw }},
+                'item_id': {{ lineItem.payload.productNumber|default('')|json_encode|raw }},
+                'item_name': {{ lineItem.label|default('')|json_encode|raw }},
+                'price': {{ itemPrice|default(0) }},
+                'quantity': {{ lineItem.quantity|default(1) }}
+                },
+            {% endfor %}
+            ]
+        {% endif %}
+        },
+    {% endblock %}
+    {% block layout_stape_data_layer_user_data %}
+        {% if customerDataEventsActive and customer %}
+            'user_data': {
+            {% if billingAddress and billingAddress.city %}'city': {{ billingAddress.city|json_encode|raw }},{% endif %}
+            {% if billingAddress and billingAddress.country %}'country': {{ billingAddress.country.name|json_encode|raw }},{% endif %}
+            'customer_id': {{ customer.customerNumber|json_encode|raw }},
+            'email': {{ customer.email|json_encode|raw }},
+            'first_name': {{ (billingAddress ? billingAddress.firstName : customer.firstName)|json_encode|raw }},
+            'last_name': {{ (billingAddress ? billingAddress.lastName : customer.lastName)|json_encode|raw }},
+            {% if billingAddress and billingAddress.phoneNumber %}'phone': {{ billingAddress.phoneNumber|json_encode|raw }},{% endif %}
+            {% if billingAddress and billingAddress.countryState %}'region': {{ billingAddress.countryState.name|json_encode|raw }},{% endif %}
+            {% if billingAddress and billingAddress.street %}'street': {{ billingAddress.street|json_encode|raw }},{% endif %}
+            {% if billingAddress and billingAddress.zipcode %}'zip': {{ billingAddress.zipcode|json_encode|raw }}{% endif %}
+            },
+        {% endif %}
+    {% endblock %}
+    });
+{% endblock %}

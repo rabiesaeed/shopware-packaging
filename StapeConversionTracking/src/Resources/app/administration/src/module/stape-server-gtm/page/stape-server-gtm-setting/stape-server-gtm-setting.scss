@@ -1,0 +1,155 @@
+.card-pointe-setting {
+    --stape-settings-content-width: 900px;
+    --stape-settings-text-color: #52667a;
+    --stape-settings-heading-color: #3f5368;
+    --stape-settings-border-color: #d8dde6;
+
+    .smart-bar__content {
+        max-width: var(--stape-settings-content-width);
+    }
+
+    .smart-bar__header h2 {
+        color: var(--stape-settings-heading-color);
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 24px;
+
+        .mt-icon,
+        .sw-icon {
+            color: var(--stape-settings-heading-color);
+            margin: 0 4px;
+            width: 10px;
+            height: 10px;
+        }
+    }
+
+    .sw-page__main-content-inner {
+        background: #f0f2f5;
+        padding-top: 0;
+    }
+
+    .sw-card-wrapper,
+    .mt-card {
+        max-width: var(--stape-settings-content-width);
+        margin: 0 auto 36px;
+    }
+
+    .sw-card,
+    .mt-card {
+        max-width: var(--stape-settings-content-width);
+        border: 1px solid var(--stape-settings-border-color);
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+
+    .sw-card__header,
+    .mt-card__header {
+        min-height: 58px;
+        padding: 0 28px;
+        align-items: center;
+        background: #fff;
+        border-bottom: 1px solid var(--stape-settings-border-color);
+    }
+
+    .sw-card__title,
+    .mt-card__title {
+        color: var(--stape-settings-heading-color);
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 24px;
+    }
+
+    .sw-card__content,
+    .mt-card__content,
+    .mt-card__body {
+        padding: 26px 28px 30px;
+        background: #fff;
+    }
+
+    .sw-card--grid .sw-card__content {
+        padding: 26px 28px 30px;
+    }
+
+    .card-pointe-settings-credentials-fields {
+        color: var(--stape-settings-text-color);
+        font-size: 14px;
+        line-height: 18px;
+    }
+
+    .sw-field,
+    .mt-field,
+    .sw-inherit-wrapper,
+    .mt-checkbox,
+    .mt-switch {
+        margin-bottom: 22px;
+    }
+
+    .sw-field__label,
+    .mt-field__label,
+    .mt-checkbox__label,
+    .mt-switch__label {
+        color: var(--stape-settings-text-color);
+        font-size: 14px;
+        line-height: 18px;
+    }
+
+    .sw-field--checkbox .sw-field--checkbox__content,
+    .sw-field--switch .sw-field--switch__content {
+        align-items: center;
+    }
+
+    .sw-field--checkbox .sw-field__label,
+    .sw-field--checkbox .sw-field__hint,
+    .sw-field--switch .sw-field__label,
+    .sw-field--switch .sw-field__hint {
+        margin-bottom: 0;
+        margin-left: 10px;
+    }
+
+    .sw-field--switch .sw-field__label label {
+        padding: 0;
+        line-height: 18px;
+    }
+
+    .sw-field__custom-label {
+        color: var(--stape-settings-text-color);
+        font-size: 14px;
+        line-height: 18px;
+        margin: -8px 0 8px;
+    }
+
+    .stape-cookie-keeper-info {
+        display: block;
+        clear: both;
+        margin: 6px 0 0;
+        padding-left: 0;
+    }
+
+    .sw-field input:not([type="checkbox"]),
+    .sw-field textarea,
+    .sw-single-select,
+    .mt-text-field input,
+    .mt-select,
+    .mt-select__selection {
+        min-height: 46px;
+        color: var(--stape-settings-text-color);
+        font-size: 14px;
+    }
+
+    .sw-help-text,
+    .mt-field__hint,
+    .mt-field__help-text {
+        color: #7b8a9a;
+    }
+
+    .card-pointe-settings-credentials-fields__test-button {
+        min-width: 132px;
+        height: 30px;
+        border-color: #ffd700;
+        background: #ffd700;
+        color: #52667a;
+        font-size: 12px;
+        font-weight: 600;
+    }
+}
