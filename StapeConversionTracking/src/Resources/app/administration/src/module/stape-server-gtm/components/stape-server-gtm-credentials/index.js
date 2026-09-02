@@ -3,6 +3,7 @@ import './stape-server-gtm-credential.scss';
 
 const {Component, Context, Mixin} = Shopware;
 const {Criteria} = Shopware.Data;
+const CONFIG_PREFIX = 'StapeConversionTracking.config.';
 
 const componentConfig = {
     template: template,
@@ -88,9 +89,58 @@ const componentConfig = {
     computed: {
         isLocalGeneratedLoader() {
             return this.actualConfigData?.['StapeConversionTracking.config.customLoaderSource'] === 'local';
+        },
+
+        gtmSnippetReady() {
+            return this.effectiveBool('snippetActive') && this.effectiveString('snippetId') !== '';
+        },
+
+        customDomainReady() {
+            return this.gtmSnippetReady
+                && this.effectiveBool('customDomainActive')
+                && this.effectiveString('customDomain') !== '';
+        },
+
+        customLoaderReady() {
+            return this.customDomainReady
+                && this.effectiveBool('customLoaderActive')
+                && this.effectiveString('customLoader') !== '';
+        },
+
+        webhooksActive() {
+            return this.effectiveBool('sendWebhooks');
         }
     },
     methods: {
+        configKey(key) {
+            return `${CONFIG_PREFIX}${key}`;
+        },
+
+        isInheritedConfigValue(value) {
+            return value === undefined || value === null || value === '';
+        },
+
+        effectiveConfigValue(key) {
+            const configKey = this.configKey(key);
+            const currentValue = this.actualConfigData?.[configKey];
+
+            if (this.selectedSalesChannelId !== null && this.isInheritedConfigValue(currentValue)) {
+                return this.allConfigs?.['null']?.[configKey];
+            }
+
+            return currentValue;
+        },
+
+        effectiveBool(key) {
+            return this.effectiveConfigValue(key) === true;
+        },
+
+        effectiveString(key) {
+            const value = this.effectiveConfigValue(key);
+
+            return typeof value === 'string' ? value.trim() : '';
+        },
+
         checkTextFieldInheritance(value) {
             if (typeof value !== 'string') {
                 return true;
@@ -155,7 +205,7 @@ const componentConfig = {
         },
 
         sendTestWebhook() {
-            const url = this.actualConfigData['StapeConversionTracking.config.serverContainerUrl'];
+            const url = this.effectiveString('serverContainerUrl');
 
             if (!url) {
                 this.createNotificationError({

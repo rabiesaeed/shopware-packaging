@@ -59,6 +59,45 @@ export default Shopware.Component.register('stape-server-gtm-setting', {
     watch: {},
 
     methods: {
+        configKey(key) {
+            return `StapeConversionTracking.config.${key}`;
+        },
+
+        isInheritedConfigValue(value) {
+            return value === undefined || value === null || value === '';
+        },
+
+        effectiveConfigValue(key) {
+            const configKey = this.configKey(key);
+            const currentValue = this.config?.[configKey];
+
+            if (this.selectedSalesChannelId !== null && this.isInheritedConfigValue(currentValue)) {
+                return this.$refs.configComponent?.allConfigs?.['null']?.[configKey];
+            }
+
+            return currentValue;
+        },
+
+        effectiveBool(key) {
+            return this.effectiveConfigValue(key) === true;
+        },
+
+        effectiveString(key) {
+            const value = this.effectiveConfigValue(key);
+
+            return typeof value === 'string' ? value.trim() : '';
+        },
+
+        trimCurrentStringValue(key) {
+            const configKey = this.configKey(key);
+
+            if (typeof this.config?.[configKey] !== 'string') {
+                return;
+            }
+
+            this.config[configKey] = this.config[configKey].trim();
+        },
+
         createdComponent() {
             this.getSalesChannels();
 
@@ -103,13 +142,11 @@ export default Shopware.Component.register('stape-server-gtm-setting', {
             this.isLoading = true;
 
             // GTM snippet validation
-            let gtmSnippetId;
-            if (this.config['StapeConversionTracking.config.snippetId']) {
-                gtmSnippetId = this.config['StapeConversionTracking.config.snippetId'].trim();
-            }
-            const gtmSnippetActive = this.config['StapeConversionTracking.config.snippetActive'];
-            this.config['StapeConversionTracking.config.snippetId'] = gtmSnippetId;
-            if (gtmSnippetActive && gtmSnippetId && (gtmSnippetId.slice(0, 4) !== 'GTM-' || !this.isValidCode(gtmSnippetId.slice(4))) || !gtmSnippetActive && gtmSnippetId != '') {
+            this.trimCurrentStringValue('snippetId');
+            const gtmSnippetId = this.effectiveString('snippetId');
+            const gtmSnippetActive = this.effectiveBool('snippetActive');
+
+            if (gtmSnippetActive && (!gtmSnippetId || gtmSnippetId.slice(0, 4) !== 'GTM-' || !this.isValidCode(gtmSnippetId.slice(4)))) {
                 this.createNotificationError({
                     message: this.$tc('stape-server-gtm.settingForm.notifications.gtmSnippet.notificationFailed')
                 });
@@ -118,15 +155,19 @@ export default Shopware.Component.register('stape-server-gtm-setting', {
             }
 
             // Custom domain validation
-            let customDomain;
-            if (this.config['StapeConversionTracking.config.customDomain']) {
-                customDomain = this.config['StapeConversionTracking.config.customDomain'].trim();
-                if (customDomain.endsWith('/')) {
-                    this.config['StapeConversionTracking.config.customDomain'] = customDomain.slice(0, -1);
-                    customDomain = this.config['StapeConversionTracking.config.customDomain'];
+            this.trimCurrentStringValue('customDomain');
+            let customDomain = this.effectiveString('customDomain');
+            const customDomainConfigKey = this.configKey('customDomain');
+
+            if (customDomain && customDomain.endsWith('/')) {
+                if (typeof this.config?.[customDomainConfigKey] === 'string') {
+                    this.config[customDomainConfigKey] = customDomain.slice(0, -1);
                 }
+
+                customDomain = customDomain.slice(0, -1);
             }
-            let customDomainActive = this.config['StapeConversionTracking.config.customDomainActive'];
+
+            let customDomainActive = this.effectiveBool('customDomainActive');
             if (customDomainActive && customDomain && (customDomain.slice(0, 8) !== 'https://' || customDomain.endsWith('/'))) {
                 this.createNotificationError({
                     message: this.$tc('stape-server-gtm.settingForm.notifications.customDomain.notificationFailed')
@@ -136,8 +177,8 @@ export default Shopware.Component.register('stape-server-gtm-setting', {
             }
 
             // Server container URL validation
-            const sendWebhooks = this.config['StapeConversionTracking.config.sendWebhooks'];
-            const serverContainerUrl = this.config['StapeConversionTracking.config.serverContainerUrl'];
+            const sendWebhooks = this.effectiveBool('sendWebhooks');
+            const serverContainerUrl = this.effectiveString('serverContainerUrl');
             if (sendWebhooks && !serverContainerUrl) {
                 this.createNotificationError({
                     message: this.$tc('stape-server-gtm.settingForm.notifications.serverContainerUrl.notificationFailed')
@@ -147,11 +188,9 @@ export default Shopware.Component.register('stape-server-gtm-setting', {
             }
 
             // Custom loader validation
-            let customLoader;
-            if (this.config['StapeConversionTracking.config.customLoader']) {
-                customLoader = this.config['StapeConversionTracking.config.customLoader'].trim();
-            }
-            let customLoaderActive = this.config['StapeConversionTracking.config.customLoaderActive'];
+            this.trimCurrentStringValue('customLoader');
+            let customLoader = this.effectiveString('customLoader');
+            let customLoaderActive = this.effectiveBool('customLoaderActive');
             if (customLoaderActive && !customLoader) {
                 this.createNotificationError({
                     message: this.$tc('stape-server-gtm.settingForm.notifications.customLoader.notificationFailed')
@@ -188,12 +227,14 @@ export default Shopware.Component.register('stape-server-gtm-setting', {
                 this.config['StapeConversionTracking.config.customLoaderSource'] = result.source || '';
                 this.config['StapeConversionTracking.config.customLoaderStatus'] = result.status || '';
                 this.config['StapeConversionTracking.config.customLoaderScript'] = result.script || '';
+                this.config['StapeConversionTracking.config.forceApiFallback'] = result.forceApiFallback === true;
             }).catch((error) => {
                 const data = error?.response?.data || error || {};
 
                 this.config['StapeConversionTracking.config.customLoaderSource'] = data.source || '';
                 this.config['StapeConversionTracking.config.customLoaderStatus'] = data.status || '';
                 this.config['StapeConversionTracking.config.customLoaderScript'] = data.script || '';
+                this.config['StapeConversionTracking.config.forceApiFallback'] = data.forceApiFallback === true;
             });
         },
 
@@ -246,7 +287,7 @@ export default Shopware.Component.register('stape-server-gtm-setting', {
                 return;
             }
 
-            const idString = `id=${this.config['StapeConversionTracking.config.snippetId']}`;
+            const idString = `id=${this.effectiveString('snippetId')}`;
             this.config['StapeConversionTracking.config.customLoaderEncodedString'] = encodeURIComponent(btoa(idString));
         },
 
@@ -255,8 +296,9 @@ export default Shopware.Component.register('stape-server-gtm-setting', {
                 return;
             }
 
-            if (this.config['StapeConversionTracking.config.customLoader']) {
-                const customLoader = this.config['StapeConversionTracking.config.customLoader'].trim();
+            const customLoader = this.effectiveString('customLoader');
+
+            if (customLoader) {
                 const values = ['page=1', 'page=2', 'page=3', `apiKey=${this.md5(customLoader).substring(0, 8)}`, 'sort=asc', 'sort=desc'];
                 const randomIndex = Math.floor(Math.random() * values.length);
                 this.config['StapeConversionTracking.config.customLoaderAddQueryParameter'] = values[randomIndex];
