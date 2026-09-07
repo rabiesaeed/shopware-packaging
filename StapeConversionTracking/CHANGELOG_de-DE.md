@@ -1,5 +1,5 @@
 # 1.0.8
-- Lokales Custom-Loader-Fallback korrigiert, wenn die Stape API nicht erreichbar ist
+- Verschiedene Fehler behoben und allgemeine Verbesserungen eingeführt.
 
 # 1.0.7
 - Shopware-Kompatibilitaetsbereich auf `>=6.6.8.0 <6.8.0` zurueckgesetzt
